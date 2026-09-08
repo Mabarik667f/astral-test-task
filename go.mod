@@ -7,7 +7,8 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/joho/godotenv v1.5.1
 	github.com/sethvargo/go-envconfig v1.4.3
-	github.com/stretchr/testify v1.8.4
+	github.com/stretchr/testify v1.9.0
+	go.uber.org/mock v0.6.0
 	golang.org/x/crypto v0.55.0
 )
 

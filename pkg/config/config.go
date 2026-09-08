@@ -15,11 +15,20 @@ import (
 )
 
 type Config struct {
-	Postgres PostgresConfig
-	Service  ServiceConfig
+	Postgres    PostgresConfig
+	Service     ServiceConfig
+	ArgonParams ArgonParams
+}
+
+type ArgonParams struct {
+	TimeCost   uint32 `env:"TIME_COST, default=2"`
+	MemoryCost uint32 `env:"MEMORY_COST, default=65536"`
+	Threads    uint8  `env:"THREADS, default=4"`
+	KeyLength  uint32 `env:"KEY_LENGTH, default=32"`
 }
 
 type ServiceConfig struct {
+	JWTSecret  string `env:"JWT_SECRET"`
 	AdminToken string `env:"ADMIN_TOKEN"`
 	HTTPHost   string `env:"SERVICE_HTTP_HOST, default=localhost"`
 	HTTPPort   string `env:"SERVICE_HTTP_PORT, default=8080"`
