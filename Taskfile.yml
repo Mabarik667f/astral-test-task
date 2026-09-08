@@ -1,0 +1,45 @@
+version: '3'
+
+tasks:
+  tidy:
+    desc: tidy deps 
+    cmds:
+      - go mod tidy 
+  test:
+    desc: run tests
+    cmds:
+      - go tool gotestsum --format testname -- -fullpath -failfast -race -shuffle=on ./... 
+  fast-test:
+    desc: run tests (shorts only)
+    cmds:
+      - go tool gotestsum --format testname -- -short -fullpath -failfast -race -shuffle=on ./...
+  generate:
+    desc: generate mocks, codegen files
+    cmds:
+      - go generate ./... 
+  linters:
+    desc: check actual linters 
+    cmds:
+      - golangci-lint linters
+  formatters:
+    desc: check actual formatters
+    cmds:
+      - golangci-lint formatters
+  lint:
+    desc: lint for project 
+    cmds: 
+      - golangci-lint run
+  fmt:
+    desc: format for project
+    cmds:
+      - golangci-lint fmt
+  test-coverage:
+    desc: simple coverage for tests on project 
+    cmds: 
+      - go tool gotestsum --format testname -- -fullpath -failfast -race -shuffle=on -coverprofile=coverage.out ./...
+      - go tool cover -func=coverage.out 
+  test-coverage-detailed:
+    desc: detailed coverage for tests on project
+    cmds:
+      - go tool gotestsum --format testname -- -fullpath -failfast -shuffle=on -coverprofile=coverage.out -covermode=count ./...
+      - go tool cover -func=coverage.out 

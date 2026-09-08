@@ -1,0 +1,19 @@
+version: "2"
+formatters:
+  enable:
+    - gci
+    - gofmt
+    - gofumpt
+    - goimports
+    - golines
+linters:
+  disable:
+    - errcheck
+  enable:
+    - govet
+    - dupl
+    - ineffassign
+    - unused
+    - staticcheck
+    - goconst
+    - gocyclo
