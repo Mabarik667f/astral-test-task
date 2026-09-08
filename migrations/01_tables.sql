@@ -8,13 +8,16 @@ CREATE TABLE IF NOT EXISTS users (
 
 CREATE TABLE IF NOT EXISTS docs (
     id UUID PRIMARY KEY,
+    owner_id UUID NOT NULL,
     name VARCHAR(255) NOT NULL,
     file BOOLEAN NOT NULL,
     public BOOLEAN NOT NULL,
     mime VARCHAR(255) NOT NULL,
     json JSONB,
     file_path TEXT,
-    created TIMESTAMP NOT NULL
+    created TIMESTAMP NOT NULL,
+
+    FOREIGN KEY (owner_id) REFERENCES users (id) ON DELETE NO ACTION
 );
 
 CREATE TABLE IF NOT EXISTS doc_grants (
