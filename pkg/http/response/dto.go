@@ -6,7 +6,7 @@ type Err struct {
 }
 
 type Resp struct {
-	Error    Err            `json:"error,omitzero"`
-	Response map[string]any `json:"response,omitempty"`
-	Data     map[string]any `json:"data,omitempty"`
+	Error    *Err `json:"error,omitempty"`
+	Response any  `json:"response,omitempty"`
+	Data     any  `json:"data,omitempty"`
 }

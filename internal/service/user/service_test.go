@@ -59,7 +59,7 @@ func TestService_Register(t *testing.T) {
 		_, err := service.Register(cmd)
 
 		require.Error(t, err)
-		assert.ErrorIs(t, err, errs.ErrPasswordTooShort)
+		assert.ErrorIs(t, err, errs.ErrPasswordPatterMatch)
 	})
 
 	t.Run("password hasher error", func(t *testing.T) {
@@ -163,10 +163,10 @@ func TestService_Login(t *testing.T) {
 			Return(true, nil)
 
 		service := NewService(mockRepo, mockHasher, "secret")
-		res, err := service.Login(cmd)
+		userID, err := service.Login(cmd)
 
 		require.NoError(t, err)
-		require.NotNil(t, res)
+		require.NotNil(t, userID)
 	})
 
 	t.Run("password not equal", func(t *testing.T) {

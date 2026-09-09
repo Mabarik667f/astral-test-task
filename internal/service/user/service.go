@@ -41,7 +41,7 @@ func (s *service) Register(cmd usercmd.RegisterUserCmd) (string, error) {
 	}
 
 	if err := model.ValidatePassword(cmd.Password); err != nil {
-		return "", err
+		return "", errs.ErrPasswordPatterMatch
 	}
 
 	pswdHash, err := s.hasher.Hash(cmd.Password)
@@ -61,20 +61,20 @@ func (s *service) Register(cmd usercmd.RegisterUserCmd) (string, error) {
 	return user.Login, nil
 }
 
-func (s *service) Login(cmd usercmd.LoginCmd) (string, error) {
+func (s *service) Login(cmd usercmd.LoginCmd) (uuid.UUID, error) {
 	user, err := s.repo.GetByLoginWithPasswordHash(context.Background(), cmd.Login)
 	if err != nil {
-		return "", err
+		return uuid.Nil, err
 	}
 
 	ok, err := s.hasher.Verify(string(user.Password), cmd.Password)
 	if err != nil {
-		return "", err
+		return uuid.Nil, err
 	}
 
 	if !ok {
-		return "", errs.ErrPasswordsNotEqual
+		return uuid.Nil, errs.ErrPasswordsNotEqual
 	}
 
-	return uuid.NewString(), nil
+	return user.ID, nil
 }
