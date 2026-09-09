@@ -1,12 +1,16 @@
 package app
 
 import (
+	"context"
 	"log/slog"
 	"net/http"
 	"os"
 	"time"
 
 	"github.com/Mabarik667f/fsserver/internal/api/handler"
+	"github.com/Mabarik667f/fsserver/internal/closer"
+	"github.com/Mabarik667f/fsserver/internal/infrastructure"
+	"github.com/Mabarik667f/fsserver/internal/infrastructure/cache"
 	"github.com/Mabarik667f/fsserver/internal/infrastructure/db"
 	"github.com/Mabarik667f/fsserver/internal/infrastructure/security"
 	"github.com/Mabarik667f/fsserver/internal/integration"
@@ -17,17 +21,22 @@ import (
 	"github.com/alexedwards/scs/v2"
 	"github.com/alexedwards/scs/v2/memstore"
 	"github.com/go-playground/validator/v10"
+	"github.com/gorilla/schema"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type diContainer struct {
-	api            http.Handler
-	db             *pgxpool.Pool
+	api http.Handler
+	db  *pgxpool.Pool
+
 	hasher         *security.ArgonHasher
 	sessionManager *scs.SessionManager
-	storage        integration.FileStorage
+
+	storage integration.FileStorage
+	cache   infrastructure.Cache
 
 	validator *validator.Validate
+	decoder   *schema.Decoder
 
 	userRepo repository.UserRepository
 	docRepo  repository.DocRepository
@@ -51,10 +60,31 @@ func (d *diContainer) DB() *pgxpool.Pool {
 			os.Exit(1)
 		}
 
+		closer.Add("DB", func(ctx context.Context) error {
+			pool.Close()
+			return nil
+		})
+
 		d.db = pool
 	}
 
 	return d.db
+}
+
+func (d *diContainer) Cache() infrastructure.Cache {
+	if d.cache == nil {
+		instance := cache.NewInMemoryCache()
+		d.cache = instance
+		closer.Add("Cache", func(ctx context.Context) error {
+			instance.StartCleanup(
+				ctx,
+				time.Duration(config.AppConfig().CacheParams.CleanupDurationMinutes)*time.Minute,
+			)
+			return nil
+		})
+	}
+
+	return d.cache
 }
 
 func (d *diContainer) Storage() integration.FileStorage {
@@ -69,9 +99,8 @@ func (d *diContainer) SessionManager() *scs.SessionManager {
 	if d.sessionManager == nil {
 		d.sessionManager = scs.New()
 		d.sessionManager.Lifetime = 24 * time.Hour
-		d.sessionManager.Store = memstore.New() // TODO: change to redis later
+		d.sessionManager.Store = memstore.New()
 	}
-
 	return d.sessionManager
 }
 
@@ -94,6 +123,14 @@ func (d *diContainer) Validator() *validator.Validate {
 	}
 
 	return d.validator
+}
+
+func (d *diContainer) Decoder() *schema.Decoder {
+	if d.decoder == nil {
+		d.decoder = schema.NewDecoder()
+	}
+
+	return d.decoder
 }
 
 func (d *diContainer) UserRepo() repository.UserRepository {
@@ -141,7 +178,12 @@ func (d *diContainer) UserHandler() handler.UserHandler {
 
 func (d *diContainer) DocHandler() handler.DocHandler {
 	if d.docHandler == nil {
-		d.docHandler = handler.NewDocHandler(d.DocService(), d.Validator())
+		d.docHandler = handler.NewDocHandler(
+			d.DocService(),
+			d.Validator(),
+			d.Decoder(),
+			d.SessionManager(),
+		)
 	}
 	return d.docHandler
 }

@@ -10,6 +10,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/Mabarik667f/fsserver/internal/closer"
 	"github.com/Mabarik667f/fsserver/pkg/config"
 )
 
@@ -64,10 +65,17 @@ func (a *App) Run() error {
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 	defer cancel()
 
-	slog.Info("server turned off")
-
 	if err := a.httpServer.Shutdown(shutdownCtx); err != nil {
 		slog.Error("error to close http server", "err", err)
+	}
+
+	slog.Info("server turned off")
+
+	closerCtx, closerCancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer closerCancel()
+
+	if err := closer.CloseAll(closerCtx); err != nil {
+		slog.Error("errors when closing resources", "err", err)
 	}
 
 	return nil
