@@ -10,9 +10,13 @@
 package doc
 
 import (
+	context "context"
 	reflect "reflect"
 
 	doccmd "github.com/Mabarik667f/fsserver/internal/command/doc"
+	model "github.com/Mabarik667f/fsserver/internal/model"
+	query "github.com/Mabarik667f/fsserver/internal/model/query"
+	uuid "github.com/google/uuid"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -40,6 +44,50 @@ func (m *MockService) EXPECT() *MockServiceMockRecorder {
 	return m.recorder
 }
 
+// DeleteByID mocks base method.
+func (m *MockService) DeleteByID(id, userID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteByID", id, userID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteByID indicates an expected call of DeleteByID.
+func (mr *MockServiceMockRecorder) DeleteByID(id, userID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteByID", reflect.TypeOf((*MockService)(nil).DeleteByID), id, userID)
+}
+
+// Get mocks base method.
+func (m *MockService) Get(cmd doccmd.GetDocumentsListCmd, user model.User) ([]query.DocReadModel, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Get", cmd, user)
+	ret0, _ := ret[0].([]query.DocReadModel)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Get indicates an expected call of Get.
+func (mr *MockServiceMockRecorder) Get(cmd, user any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockService)(nil).Get), cmd, user)
+}
+
+// GetByID mocks base method.
+func (m *MockService) GetByID(id uuid.UUID, user model.User, metaOnly bool) (query.FullDocReadModel, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetByID", id, user, metaOnly)
+	ret0, _ := ret[0].(query.FullDocReadModel)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetByID indicates an expected call of GetByID.
+func (mr *MockServiceMockRecorder) GetByID(id, user, metaOnly any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByID", reflect.TypeOf((*MockService)(nil).GetByID), id, user, metaOnly)
+}
+
 // Upload mocks base method.
 func (m *MockService) Upload(cmd doccmd.CreateDocumentCmd) error {
 	m.ctrl.T.Helper()
@@ -52,4 +100,42 @@ func (m *MockService) Upload(cmd doccmd.CreateDocumentCmd) error {
 func (mr *MockServiceMockRecorder) Upload(cmd any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Upload", reflect.TypeOf((*MockService)(nil).Upload), cmd)
+}
+
+// MockSessionManager is a mock of SessionManager interface.
+type MockSessionManager struct {
+	ctrl     *gomock.Controller
+	recorder *MockSessionManagerMockRecorder
+	isgomock struct{}
+}
+
+// MockSessionManagerMockRecorder is the mock recorder for MockSessionManager.
+type MockSessionManagerMockRecorder struct {
+	mock *MockSessionManager
+}
+
+// NewMockSessionManager creates a new mock instance.
+func NewMockSessionManager(ctrl *gomock.Controller) *MockSessionManager {
+	mock := &MockSessionManager{ctrl: ctrl}
+	mock.recorder = &MockSessionManagerMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockSessionManager) EXPECT() *MockSessionManagerMockRecorder {
+	return m.recorder
+}
+
+// GetString mocks base method.
+func (m *MockSessionManager) GetString(ctx context.Context, key string) string {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetString", ctx, key)
+	ret0, _ := ret[0].(string)
+	return ret0
+}
+
+// GetString indicates an expected call of GetString.
+func (mr *MockSessionManagerMockRecorder) GetString(ctx, key any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetString", reflect.TypeOf((*MockSessionManager)(nil).GetString), ctx, key)
 }

@@ -111,10 +111,6 @@ func (s *service) Get(
 ) ([]query.DocReadModel, error) {
 	ctx := context.Background()
 
-	if cmd.Login == nil {
-		cmd.Login = &user.Login
-	}
-
 	docs, err := s.repo.Get(ctx, cmd, user.ID)
 	if err != nil {
 		return []query.DocReadModel{}, err

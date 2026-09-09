@@ -11,10 +11,12 @@ import (
 
 	"github.com/Mabarik667f/fsserver/internal/api/handler/doc/dto"
 	doccmd "github.com/Mabarik667f/fsserver/internal/command/doc"
+	"github.com/Mabarik667f/fsserver/internal/model"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
+	"github.com/gorilla/schema"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	gomock "go.uber.org/mock/gomock"
@@ -40,6 +42,10 @@ func TestHandler_Upload(t *testing.T) {
 
 		mockSrv := NewMockService(ctrl)
 		validate := validator.New()
+		decoder := schema.NewDecoder()
+		mockManager := NewMockSessionManager(ctrl)
+
+		user := model.User{ID: uuid.New(), Login: "ValidLogin2"}
 
 		fileContent := "test file content"
 
@@ -74,9 +80,7 @@ func TestHandler_Upload(t *testing.T) {
 		mockSrv.EXPECT().
 			Upload(gomock.Any()).
 			DoAndReturn(func(cmd doccmd.CreateDocumentCmd) error {
-				assert.Equal(t, uuid.MustParse(
-					"4a3a5a37-cee2-4abd-a221-8ee2dcb47d27",
-				), cmd.OwnerID)
+				assert.Equal(t, user.ID, cmd.OwnerID)
 				assert.Equal(t, "photo.jpg", cmd.Name)
 				assert.True(t, cmd.IsFile)
 				assert.False(t, cmd.IsPublic)
@@ -95,9 +99,14 @@ func TestHandler_Upload(t *testing.T) {
 				return nil
 			})
 
+		mockManager.EXPECT().GetString(gomock.Any(), "userID").Return(user.ID.String())
+		mockManager.EXPECT().GetString(gomock.Any(), "userLogin").Return(user.Login)
+
 		handler := NewHandler(
 			mockSrv,
 			validate,
+			decoder,
+			mockManager,
 		)
 
 		req := httptest.NewRequest(

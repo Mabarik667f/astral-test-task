@@ -11,6 +11,6 @@ type MetaData struct {
 type GetDocumentsListRequest struct {
 	Login string `schema:"login" validate:"omitempty"`
 	Key   string `schema:"key"   validate:"required"`
-	Value any    `schema:"value" validate:"required"`
+	Value string `schema:"value" validate:"required"`
 	Limit int    `schema:"limit" validate:"required,gt=0"`
 }

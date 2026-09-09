@@ -130,7 +130,7 @@ func (r *repository) Get(
 			d.file_path,
 			d.created,
 			COALESCE(array_agg(u.login) FILTER (WHERE u.login IS NOT NULL), '{}') AS grants
-		FROM docs  
+		FROM docs d 
 		LEFT JOIN doc_grants dg 
 			ON dg.doc_id = d.id 
 		LEFT JOIN users u 
@@ -186,7 +186,7 @@ func (r *repository) Get(
 		result[i] = entity.ToDocReadModel(docs[i])
 	}
 
-	return []query.DocReadModel{}, nil
+	return result, nil
 }
 
 func (r *repository) GetByID(

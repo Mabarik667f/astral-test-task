@@ -347,3 +347,39 @@ func TestService_DeleteByID(t *testing.T) {
 		assert.ErrorIs(t, err, errs.ErrDocPermissionDenied)
 	})
 }
+
+func TestService_Get(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	mockRepo := NewMockRepository(ctrl)
+	mockUserRepo := NewMockUserRepository(ctrl)
+	mockStorage := NewMockFileStorage(ctrl)
+
+	service := NewService(mockUserRepo, mockRepo, mockStorage)
+
+	user := model.User{
+		ID:    uuid.New(),
+		Login: "testuser",
+	}
+
+	cmd := doccmd.GetDocumentsListCmd{
+		Login: new("testuser2"),
+		Key:   "mime",
+		Value: "image/jpeg",
+		Limit: 10,
+	}
+
+	expected := []query.DocReadModel{
+		{
+			ID:   uuid.New(),
+			Name: "photo.jpg",
+		},
+	}
+
+	mockRepo.EXPECT().
+		Get(gomock.Any(), cmd, user.ID).
+		Return(expected, nil)
+
+	got, err := service.Get(cmd, user)
+	require.NoError(t, err)
+	require.Equal(t, expected, got)
+}
