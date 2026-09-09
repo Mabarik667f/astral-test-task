@@ -10,6 +10,7 @@
 package user
 
 import (
+	context "context"
 	reflect "reflect"
 
 	model "github.com/Mabarik667f/fsserver/internal/model"
@@ -41,18 +42,33 @@ func (m *MockRepository) EXPECT() *MockRepositoryMockRecorder {
 }
 
 // Create mocks base method.
-func (m *MockRepository) Create(user model.User) (model.User, error) {
+func (m *MockRepository) Create(ctx context.Context, user model.User) (model.User, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Create", user)
+	ret := m.ctrl.Call(m, "Create", ctx, user)
 	ret0, _ := ret[0].(model.User)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Create indicates an expected call of Create.
-func (mr *MockRepositoryMockRecorder) Create(user any) *gomock.Call {
+func (mr *MockRepositoryMockRecorder) Create(ctx, user any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockRepository)(nil).Create), user)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockRepository)(nil).Create), ctx, user)
+}
+
+// GetByLoginWithPasswordHash mocks base method.
+func (m *MockRepository) GetByLoginWithPasswordHash(ctx context.Context, login string) (model.User, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetByLoginWithPasswordHash", ctx, login)
+	ret0, _ := ret[0].(model.User)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetByLoginWithPasswordHash indicates an expected call of GetByLoginWithPasswordHash.
+func (mr *MockRepositoryMockRecorder) GetByLoginWithPasswordHash(ctx, login any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByLoginWithPasswordHash", reflect.TypeOf((*MockRepository)(nil).GetByLoginWithPasswordHash), ctx, login)
 }
 
 // MockPasswordHasher is a mock of PasswordHasher interface.

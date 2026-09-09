@@ -7,7 +7,7 @@ var (
 
 	ErrLoginPatternMatch = errors.New("login not matched to pattern")
 
-	ErrorPasswordNotEqual = errors.New("passwords not equal")
+	ErrPasswordsNotEqual = errors.New("passwords not equal")
 
 	ErrPasswordTooShort  = errors.New("password must be at least 8 characters")
 	ErrPasswordNoUpper   = errors.New("password must contain at least one uppercase letter")

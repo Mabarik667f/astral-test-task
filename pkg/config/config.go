@@ -28,7 +28,6 @@ type ArgonParams struct {
 }
 
 type ServiceConfig struct {
-	JWTSecret  string `env:"JWT_SECRET"`
 	AdminToken string `env:"ADMIN_TOKEN"`
 	HTTPHost   string `env:"SERVICE_HTTP_HOST, default=localhost"`
 	HTTPPort   string `env:"SERVICE_HTTP_PORT, default=8080"`
