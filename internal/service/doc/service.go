@@ -4,8 +4,11 @@ package doc
 
 import (
 	"context"
+	"fmt"
 	"io"
+	"log/slog"
 	"slices"
+	"time"
 
 	doccmd "github.com/Mabarik667f/fsserver/internal/command/doc"
 	"github.com/Mabarik667f/fsserver/internal/errs"
@@ -13,6 +16,13 @@ import (
 	"github.com/Mabarik667f/fsserver/internal/model/query"
 	"github.com/google/uuid"
 )
+
+type Cache interface {
+	Set(k string, v any, ttl time.Duration)
+	Get(k string) (any, bool)
+	Delete(k string)
+	DeleteByPrefix(prefix string)
+}
 
 type FileStorage interface {
 	Save(fileID string, name string, data io.Reader) (string, error)
@@ -40,10 +50,16 @@ type service struct {
 	userRepo UserRepository
 	repo     Repository
 	storage  FileStorage
+	cache    Cache
 }
 
-func NewService(userRepo UserRepository, repo Repository, storage FileStorage) *service {
-	return &service{repo: repo, userRepo: userRepo, storage: storage}
+func NewService(
+	userRepo UserRepository,
+	repo Repository,
+	storage FileStorage,
+	cache Cache,
+) *service {
+	return &service{repo: repo, userRepo: userRepo, storage: storage, cache: cache}
 }
 
 func NewEmpty() *service {
@@ -68,7 +84,7 @@ func (s *service) Upload(cmd doccmd.CreateDocumentCmd) error {
 		return errs.ErrDocBusiness
 	}
 
-	if cmd.File != nil {
+	if cmd.IsFile {
 		path, err := s.storage.Save(doc.ID.String(), doc.Name, cmd.File)
 		if err != nil {
 			return errs.ErrSaveFileToStorage
@@ -102,6 +118,8 @@ func (s *service) Upload(cmd doccmd.CreateDocumentCmd) error {
 		return err
 	}
 
+	s.cache.DeleteByPrefix("docs:list:")
+
 	return nil
 }
 
@@ -110,12 +128,25 @@ func (s *service) Get(
 	user model.User,
 ) ([]query.DocReadModel, error) {
 	ctx := context.Background()
+	slog.Info("user", "login", user.Login, "id", user.ID)
+
+	key := listCacheKey(cmd, user.ID)
+	if value, ok := s.cache.Get(key); ok {
+		docs, ok := value.([]query.DocReadModel)
+		if ok {
+			slog.Info("cache", "docs", len(docs))
+			return docs, nil
+		}
+	}
 
 	docs, err := s.repo.Get(ctx, cmd, user.ID)
 	if err != nil {
 		return []query.DocReadModel{}, err
 	}
 
+	s.cache.Set(key, docs, 5*time.Minute)
+
+	slog.Info("not cached", "docs", len(docs))
 	return docs, nil
 }
 
@@ -125,6 +156,21 @@ func (s *service) GetByID(
 	metaOnly bool,
 ) (query.FullDocReadModel, error) {
 	ctx := context.Background()
+
+	key := docCacheKey(id, user.ID)
+	value, ok := s.cache.Get(key)
+	if ok {
+		doc, ok := value.(query.FullDocReadModel)
+		if ok {
+			file, err := s.readFile(metaOnly, doc)
+			if err != nil {
+				return query.FullDocReadModel{}, err
+			}
+			doc.File = file
+			return doc, nil
+		}
+	}
+
 	doc, err := s.repo.GetByID(ctx, id)
 	if err != nil {
 		return query.FullDocReadModel{}, err
@@ -150,13 +196,13 @@ func (s *service) GetByID(
 		File:      nil,
 	}
 
-	if !metaOnly && doc.IsFile {
-		file, err := s.storage.Read(doc.ID.String(), doc.Name)
-		if err != nil {
-			return query.FullDocReadModel{}, err
-		}
-		res.File = file
+	s.cache.Set(key, res, 5*time.Minute)
+
+	file, err := s.readFile(metaOnly, res)
+	if err != nil {
+		return query.FullDocReadModel{}, err
 	}
+	res.File = file
 
 	return res, nil
 }
@@ -176,5 +222,43 @@ func (s *service) DeleteByID(id, userID uuid.UUID) error {
 		return err
 	}
 
-	return s.storage.Delete(doc.ID.String())
+	s.cache.Delete(docCacheKey(id, userID))
+	s.cache.DeleteByPrefix("docs:list:")
+
+	if err := s.storage.Delete(doc.ID.String()); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *service) readFile(metaOnly bool, doc query.FullDocReadModel) (io.ReadCloser, error) {
+	if !metaOnly && doc.IsFile {
+		file, err := s.storage.Read(doc.ID.String(), doc.Name)
+		if err != nil {
+			return nil, err
+		}
+		return file, nil
+	}
+	return nil, nil
+}
+
+func listCacheKey(cmd doccmd.GetDocumentsListCmd, userID uuid.UUID) string {
+	login := ""
+	if cmd.Login != nil {
+		login = *cmd.Login
+	}
+
+	return fmt.Sprintf(
+		"docs:list:%s:%s:%s:%s:%d",
+		userID,
+		login,
+		cmd.Key,
+		cmd.Value,
+		cmd.Limit,
+	)
+}
+
+func docCacheKey(id, userID uuid.UUID) string {
+	return fmt.Sprintf("docs:%s:%s", userID, id)
 }

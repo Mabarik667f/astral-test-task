@@ -2,6 +2,7 @@ package cache
 
 import (
 	"context"
+	"strings"
 	"sync"
 	"time"
 )
@@ -47,6 +48,16 @@ func (c *InMemoryCache) Delete(k string) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	delete(c.data, k)
+}
+
+func (c *InMemoryCache) DeleteByPrefix(prefix string) {
+	for k := range c.data {
+		if strings.HasPrefix(k, prefix) {
+			c.mu.Lock()
+			defer c.mu.Unlock()
+			delete(c.data, k)
+		}
+	}
 }
 
 func (c *InMemoryCache) StartCleanup(ctx context.Context, interval time.Duration) {

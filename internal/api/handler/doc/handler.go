@@ -178,6 +178,7 @@ func (h *handler) Get(w http.ResponseWriter, r *http.Request) {
 	}
 
 	cmd := doccmd.GetDocumentsListCmd{
+		Login: new(""),
 		Key:   req.Key,
 		Value: req.Value,
 		Limit: req.Limit,

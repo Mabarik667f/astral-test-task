@@ -163,7 +163,7 @@ func (d *diContainer) UserService() service.UserService {
 
 func (d *diContainer) DocService() service.DocService {
 	if d.docService == nil {
-		d.docService = service.NewDocService(d.UserRepo(), d.DocRepo(), d.Storage())
+		d.docService = service.NewDocService(d.UserRepo(), d.DocRepo(), d.Storage(), d.Cache())
 	}
 
 	return d.docService

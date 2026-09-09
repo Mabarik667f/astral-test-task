@@ -5,6 +5,7 @@ import (
 	"io"
 	"strings"
 	"testing"
+	"time"
 
 	doccmd "github.com/Mabarik667f/fsserver/internal/command/doc"
 	"github.com/Mabarik667f/fsserver/internal/errs"
@@ -24,6 +25,7 @@ func TestService_Upload(t *testing.T) {
 		mockRepo := NewMockRepository(ctrl)
 		mockUserRepo := NewMockUserRepository(ctrl)
 		mockStorage := NewMockFileStorage(ctrl)
+		mockCache := NewMockCache(ctrl)
 
 		file := strings.NewReader("test file")
 
@@ -69,10 +71,13 @@ func TestService_Upload(t *testing.T) {
 			).
 			Return(nil)
 
+		mockCache.EXPECT().DeleteByPrefix("docs:list:")
+
 		service := NewService(
 			mockUserRepo,
 			mockRepo,
 			mockStorage,
+			mockCache,
 		)
 
 		err := service.Upload(cmd)
@@ -87,6 +92,7 @@ func TestService_Upload(t *testing.T) {
 		mockRepo := NewMockRepository(ctrl)
 		mockUserRepo := NewMockUserRepository(ctrl)
 		mockStorage := NewMockFileStorage(ctrl)
+		mockCache := NewMockCache(ctrl)
 
 		cmd := doccmd.CreateDocumentCmd{
 			OwnerID:  uuid.New(),
@@ -99,6 +105,7 @@ func TestService_Upload(t *testing.T) {
 			mockUserRepo,
 			mockRepo,
 			mockStorage,
+			mockCache,
 		)
 
 		err := service.Upload(cmd)
@@ -114,6 +121,7 @@ func TestService_Upload(t *testing.T) {
 		mockRepo := NewMockRepository(ctrl)
 		mockUserRepo := NewMockUserRepository(ctrl)
 		mockStorage := NewMockFileStorage(ctrl)
+		mockCache := NewMockCache(ctrl)
 
 		file := strings.NewReader("test file")
 
@@ -134,6 +142,7 @@ func TestService_Upload(t *testing.T) {
 			mockUserRepo,
 			mockRepo,
 			mockStorage,
+			mockCache,
 		)
 
 		err := service.Upload(cmd)
@@ -149,6 +158,7 @@ func TestService_Upload(t *testing.T) {
 		mockRepo := NewMockRepository(ctrl)
 		mockUserRepo := NewMockUserRepository(ctrl)
 		mockStorage := NewMockFileStorage(ctrl)
+		mockCache := NewMockCache(ctrl)
 
 		file := strings.NewReader("test file")
 
@@ -190,6 +200,7 @@ func TestService_Upload(t *testing.T) {
 			mockUserRepo,
 			mockRepo,
 			mockStorage,
+			mockCache,
 		)
 
 		err := service.Upload(cmd)
@@ -207,6 +218,7 @@ func TestService_GetByID(t *testing.T) {
 		mockRepo := NewMockRepository(ctrl)
 		mockUserRepo := NewMockUserRepository(ctrl)
 		mockStorage := NewMockFileStorage(ctrl)
+		mockCache := NewMockCache(ctrl)
 
 		user := model.User{ID: uuid.New(), Login: "user1"}
 		doc := query.DocReadModel{
@@ -225,7 +237,30 @@ func TestService_GetByID(t *testing.T) {
 			Read(doc.ID.String(), doc.Name).
 			Return(file, nil)
 
-		service := NewService(mockUserRepo, mockRepo, mockStorage)
+		mockCache.EXPECT().Get(docCacheKey(doc.ID, doc.OwnerID)).Return(nil, false)
+		mockCache.EXPECT().
+			Set(docCacheKey(doc.ID, user.ID), gomock.Any(), 5*time.Minute).
+			DoAndReturn(func(key string, value any, ttl time.Duration) {
+				assert.Equal(t, docCacheKey(doc.ID, user.ID), key)
+				assert.Equal(t, 5*time.Minute, ttl)
+
+				cached, ok := value.(query.FullDocReadModel)
+				require.True(t, ok)
+
+				assert.Equal(t, doc.ID, cached.ID)
+				assert.Equal(t, doc.OwnerID, cached.OwnerID)
+				assert.Equal(t, doc.Name, cached.Name)
+				assert.Equal(t, doc.IsFile, cached.IsFile)
+				assert.Equal(t, doc.IsPublic, cached.IsPublic)
+				assert.Equal(t, doc.MimeType, cached.MimeType)
+				assert.Equal(t, doc.JSONData, cached.JSONData)
+				assert.Equal(t, doc.FilePath, cached.FilePath)
+				assert.Equal(t, doc.CreatedAt, cached.CreatedAt)
+				assert.Equal(t, doc.Grants, cached.Grants)
+				assert.Nil(t, cached.File)
+			})
+
+		service := NewService(mockUserRepo, mockRepo, mockStorage, mockCache)
 
 		got, err := service.GetByID(doc.ID, user, false)
 
@@ -242,6 +277,7 @@ func TestService_GetByID(t *testing.T) {
 		mockRepo := NewMockRepository(ctrl)
 		mockUserRepo := NewMockUserRepository(ctrl)
 		mockStorage := NewMockFileStorage(ctrl)
+		mockCache := NewMockCache(ctrl)
 
 		user := model.User{ID: uuid.New(), Login: "user1"}
 		doc := query.DocReadModel{
@@ -252,8 +288,9 @@ func TestService_GetByID(t *testing.T) {
 		}
 
 		mockRepo.EXPECT().GetByID(gomock.Any(), doc.ID).Return(doc, nil)
+		mockCache.EXPECT().Get(docCacheKey(doc.ID, user.ID)).Return(nil, false)
 
-		service := NewService(mockUserRepo, mockRepo, mockStorage)
+		service := NewService(mockUserRepo, mockRepo, mockStorage, mockCache)
 
 		got, err := service.GetByID(doc.ID, user, true)
 
@@ -268,6 +305,7 @@ func TestService_GetByID(t *testing.T) {
 		mockRepo := NewMockRepository(ctrl)
 		mockUserRepo := NewMockUserRepository(ctrl)
 		mockStorage := NewMockFileStorage(ctrl)
+		mockCache := NewMockCache(ctrl)
 
 		user := model.User{
 			ID:    uuid.New(),
@@ -286,8 +324,23 @@ func TestService_GetByID(t *testing.T) {
 		mockRepo.EXPECT().
 			GetByID(gomock.Any(), doc.ID).
 			Return(doc, nil)
+		mockCache.EXPECT().Get(docCacheKey(doc.ID, doc.OwnerID)).Return(nil, false)
+		mockCache.EXPECT().
+			Set(docCacheKey(doc.ID, user.ID), gomock.Any(), 5*time.Minute).
+			DoAndReturn(func(key string, value any, ttl time.Duration) {
+				assert.Equal(t, 5*time.Minute, ttl)
 
-		service := NewService(mockUserRepo, mockRepo, mockStorage)
+				cached, ok := value.(query.FullDocReadModel)
+				require.True(t, ok)
+
+				assert.Equal(t, doc.ID, cached.ID)
+				assert.Equal(t, doc.Name, cached.Name)
+				assert.Equal(t, doc.JSONData, cached.JSONData)
+				assert.False(t, cached.IsFile)
+				assert.Nil(t, cached.File)
+			})
+
+		service := NewService(mockUserRepo, mockRepo, mockStorage, mockCache)
 
 		got, err := service.GetByID(doc.ID, user, false)
 
@@ -306,6 +359,7 @@ func TestService_DeleteByID(t *testing.T) {
 		mockRepo := NewMockRepository(ctrl)
 		mockUserRepo := NewMockUserRepository(ctrl)
 		mockStorage := NewMockFileStorage(ctrl)
+		mockCache := NewMockCache(ctrl)
 
 		userID := uuid.New()
 		doc := query.DocReadModel{
@@ -317,7 +371,10 @@ func TestService_DeleteByID(t *testing.T) {
 		mockRepo.EXPECT().DeleteByID(gomock.Any(), doc.ID).Return(nil)
 		mockStorage.EXPECT().Delete(doc.ID.String()).Return(nil)
 
-		service := NewService(mockUserRepo, mockRepo, mockStorage)
+		mockCache.EXPECT().Delete(docCacheKey(doc.ID, doc.OwnerID))
+		mockCache.EXPECT().DeleteByPrefix("docs:list:")
+
+		service := NewService(mockUserRepo, mockRepo, mockStorage, mockCache)
 
 		err := service.DeleteByID(doc.ID, userID)
 
@@ -331,6 +388,7 @@ func TestService_DeleteByID(t *testing.T) {
 		mockRepo := NewMockRepository(ctrl)
 		mockUserRepo := NewMockUserRepository(ctrl)
 		mockStorage := NewMockFileStorage(ctrl)
+		mockCache := NewMockCache(ctrl)
 
 		doc := query.DocReadModel{
 			ID:      uuid.New(),
@@ -339,7 +397,7 @@ func TestService_DeleteByID(t *testing.T) {
 
 		mockRepo.EXPECT().GetByID(gomock.Any(), doc.ID).Return(doc, nil)
 
-		service := NewService(mockUserRepo, mockRepo, mockStorage)
+		service := NewService(mockUserRepo, mockRepo, mockStorage, mockCache)
 
 		err := service.DeleteByID(doc.ID, uuid.New())
 
@@ -349,12 +407,12 @@ func TestService_DeleteByID(t *testing.T) {
 }
 
 func TestService_Get(t *testing.T) {
+	t.Parallel()
 	ctrl := gomock.NewController(t)
 	mockRepo := NewMockRepository(ctrl)
 	mockUserRepo := NewMockUserRepository(ctrl)
 	mockStorage := NewMockFileStorage(ctrl)
-
-	service := NewService(mockUserRepo, mockRepo, mockStorage)
+	mockCache := NewMockCache(ctrl)
 
 	user := model.User{
 		ID:    uuid.New(),
@@ -378,6 +436,11 @@ func TestService_Get(t *testing.T) {
 	mockRepo.EXPECT().
 		Get(gomock.Any(), cmd, user.ID).
 		Return(expected, nil)
+
+	mockCache.EXPECT().Get(listCacheKey(cmd, user.ID)).Return(nil, false)
+	mockCache.EXPECT().Set(listCacheKey(cmd, user.ID), expected, 5*time.Minute)
+
+	service := NewService(mockUserRepo, mockRepo, mockStorage, mockCache)
 
 	got, err := service.Get(cmd, user)
 	require.NoError(t, err)

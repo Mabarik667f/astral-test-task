@@ -12,6 +12,7 @@ import (
 	"github.com/Mabarik667f/fsserver/internal/api/handler/doc/dto"
 	doccmd "github.com/Mabarik667f/fsserver/internal/command/doc"
 	"github.com/Mabarik667f/fsserver/internal/model"
+	"github.com/Mabarik667f/fsserver/internal/model/query"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-playground/validator/v10"
@@ -134,5 +135,220 @@ func TestHandler_Upload(t *testing.T) {
 			map[string]any{"description": float64(123)},
 			data["json"],
 		)
+	})
+}
+
+func TestHandler_Get(t *testing.T) {
+	t.Run("success", func(t *testing.T) {
+		t.Parallel()
+
+		ctrl := gomock.NewController(t)
+
+		mockSrv := NewMockService(ctrl)
+		mockManager := NewMockSessionManager(ctrl)
+
+		validate := validator.New()
+		decoder := schema.NewDecoder()
+
+		user := model.User{
+			ID:    uuid.New(),
+			Login: "ValidLogin2",
+		}
+
+		cmd := doccmd.GetDocumentsListCmd{
+			Key:   "mime",
+			Value: "image/jpeg",
+			Limit: 10,
+		}
+
+		expected := []query.DocReadModel{
+			{
+				ID:       uuid.New(),
+				Name:     "photo.jpg",
+				IsFile:   true,
+				IsPublic: false,
+				MimeType: "image/jpeg",
+			},
+		}
+
+		mockManager.EXPECT().
+			GetString(gomock.Any(), userIDKey).
+			Return(user.ID.String())
+
+		mockManager.EXPECT().
+			GetString(gomock.Any(), userLoginKey).
+			Return(user.Login)
+
+		mockSrv.EXPECT().
+			Get(cmd, user).
+			Return(expected, nil)
+
+		handler := NewHandler(
+			mockSrv,
+			validate,
+			decoder,
+			mockManager,
+		)
+
+		req := httptest.NewRequest(
+			http.MethodGet,
+			"/api/docs?key=mime&value=image/jpeg&limit=10",
+			nil,
+		)
+
+		w := httptest.NewRecorder()
+
+		r := setupTestRouter(handler)
+		r.ServeHTTP(w, req)
+
+		require.Equal(t, http.StatusOK, w.Code)
+
+		var got map[string]any
+		require.NoError(t, json.NewDecoder(w.Body).Decode(&got))
+
+		data, ok := got["data"].(map[string]any)
+		require.True(t, ok)
+
+		docs, ok := data["docs"].([]any)
+		require.True(t, ok)
+		require.Len(t, docs, 1)
+
+		doc := docs[0].(map[string]any)
+
+		assert.Equal(t, "photo.jpg", doc["name"])
+		assert.Equal(t, "image/jpeg", doc["mime"])
+	})
+}
+
+func TestHandler_GetByID(t *testing.T) {
+	t.Run("success", func(t *testing.T) {
+		t.Parallel()
+
+		ctrl := gomock.NewController(t)
+
+		mockSrv := NewMockService(ctrl)
+		mockManager := NewMockSessionManager(ctrl)
+
+		validate := validator.New()
+		decoder := schema.NewDecoder()
+
+		user := model.User{
+			ID:    uuid.New(),
+			Login: "ValidLogin2",
+		}
+
+		docID := uuid.New()
+
+		expected := query.FullDocReadModel{
+			ID:       docID,
+			OwnerID:  user.ID,
+			Name:     "document.json",
+			IsFile:   false,
+			IsPublic: true,
+			MimeType: "application/json",
+			JSONData: map[string]any{"foo": "bar"},
+		}
+
+		mockManager.EXPECT().
+			GetString(gomock.Any(), userIDKey).
+			Return(user.ID.String())
+
+		mockManager.EXPECT().
+			GetString(gomock.Any(), userLoginKey).
+			Return(user.Login)
+
+		mockSrv.EXPECT().
+			GetByID(docID, user, false).
+			Return(expected, nil)
+
+		handler := NewHandler(
+			mockSrv,
+			validate,
+			decoder,
+			mockManager,
+		)
+
+		req := httptest.NewRequest(
+			http.MethodGet,
+			"/api/docs/"+docID.String(),
+			nil,
+		)
+
+		w := httptest.NewRecorder()
+
+		r := setupTestRouter(handler)
+		r.ServeHTTP(w, req)
+
+		require.Equal(t, http.StatusOK, w.Code)
+
+		var got map[string]any
+		require.NoError(t, json.NewDecoder(w.Body).Decode(&got))
+
+		data, ok := got["data"].(map[string]any)
+		require.True(t, ok)
+
+		assert.Equal(t, docID.String(), data["id"])
+		assert.Equal(t, "document.json", data["name"])
+	})
+}
+
+func TestHandler_DeleteByID(t *testing.T) {
+	t.Run("success", func(t *testing.T) {
+		t.Parallel()
+
+		ctrl := gomock.NewController(t)
+
+		mockSrv := NewMockService(ctrl)
+		mockManager := NewMockSessionManager(ctrl)
+
+		validate := validator.New()
+		decoder := schema.NewDecoder()
+
+		user := model.User{
+			ID:    uuid.New(),
+			Login: "ValidLogin2",
+		}
+
+		docID := uuid.New()
+
+		mockManager.EXPECT().
+			GetString(gomock.Any(), userIDKey).
+			Return(user.ID.String())
+
+		mockManager.EXPECT().
+			GetString(gomock.Any(), userLoginKey).
+			Return(user.Login)
+
+		mockSrv.EXPECT().
+			DeleteByID(docID, user.ID).
+			Return(nil)
+
+		handler := NewHandler(
+			mockSrv,
+			validate,
+			decoder,
+			mockManager,
+		)
+
+		req := httptest.NewRequest(
+			http.MethodDelete,
+			"/api/docs/"+docID.String(),
+			nil,
+		)
+
+		w := httptest.NewRecorder()
+
+		r := setupTestRouter(handler)
+		r.ServeHTTP(w, req)
+
+		require.Equal(t, http.StatusOK, w.Code)
+
+		var got map[string]any
+		require.NoError(t, json.NewDecoder(w.Body).Decode(&got))
+
+		responseData, ok := got["response"].(map[string]any)
+		require.True(t, ok)
+
+		assert.Equal(t, true, responseData[docID.String()])
 	})
 }

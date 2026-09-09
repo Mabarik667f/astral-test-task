@@ -13,6 +13,7 @@ import (
 	context "context"
 	io "io"
 	reflect "reflect"
+	time "time"
 
 	doccmd "github.com/Mabarik667f/fsserver/internal/command/doc"
 	model "github.com/Mabarik667f/fsserver/internal/model"
@@ -20,6 +21,81 @@ import (
 	uuid "github.com/google/uuid"
 	gomock "go.uber.org/mock/gomock"
 )
+
+// MockCache is a mock of Cache interface.
+type MockCache struct {
+	ctrl     *gomock.Controller
+	recorder *MockCacheMockRecorder
+	isgomock struct{}
+}
+
+// MockCacheMockRecorder is the mock recorder for MockCache.
+type MockCacheMockRecorder struct {
+	mock *MockCache
+}
+
+// NewMockCache creates a new mock instance.
+func NewMockCache(ctrl *gomock.Controller) *MockCache {
+	mock := &MockCache{ctrl: ctrl}
+	mock.recorder = &MockCacheMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockCache) EXPECT() *MockCacheMockRecorder {
+	return m.recorder
+}
+
+// Delete mocks base method.
+func (m *MockCache) Delete(k string) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "Delete", k)
+}
+
+// Delete indicates an expected call of Delete.
+func (mr *MockCacheMockRecorder) Delete(k any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockCache)(nil).Delete), k)
+}
+
+// DeleteByPrefix mocks base method.
+func (m *MockCache) DeleteByPrefix(prefix string) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "DeleteByPrefix", prefix)
+}
+
+// DeleteByPrefix indicates an expected call of DeleteByPrefix.
+func (mr *MockCacheMockRecorder) DeleteByPrefix(prefix any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteByPrefix", reflect.TypeOf((*MockCache)(nil).DeleteByPrefix), prefix)
+}
+
+// Get mocks base method.
+func (m *MockCache) Get(k string) (any, bool) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Get", k)
+	ret0, _ := ret[0].(any)
+	ret1, _ := ret[1].(bool)
+	return ret0, ret1
+}
+
+// Get indicates an expected call of Get.
+func (mr *MockCacheMockRecorder) Get(k any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockCache)(nil).Get), k)
+}
+
+// Set mocks base method.
+func (m *MockCache) Set(k string, v any, ttl time.Duration) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "Set", k, v, ttl)
+}
+
+// Set indicates an expected call of Set.
+func (mr *MockCacheMockRecorder) Set(k, v, ttl any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Set", reflect.TypeOf((*MockCache)(nil).Set), k, v, ttl)
+}
 
 // MockFileStorage is a mock of FileStorage interface.
 type MockFileStorage struct {

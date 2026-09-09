@@ -17,6 +17,7 @@ func NewDocService(
 	userRepo doc.UserRepository,
 	repo doc.Repository,
 	storage doc.FileStorage,
+	cache doc.Cache,
 ) DocService {
-	return doc.NewService(userRepo, repo, storage)
+	return doc.NewService(userRepo, repo, storage, cache)
 }
