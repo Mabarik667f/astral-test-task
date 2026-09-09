@@ -52,3 +52,29 @@ func (r *repository) GetByLoginWithPasswordHash(
 
 	return entity.ToUserWithPasswordHash(user), nil
 }
+
+func (r *repository) GetUsersByLogins(ctx context.Context, logins []string) ([]model.User, error) {
+	query := `
+		SELECT id, login
+		FROM users
+		WHERE login = ANY($1)
+	`
+
+	rows, err := r.db.Query(ctx, query, logins)
+	if err != nil {
+		return nil, fmt.Errorf("query users by logins: %w", err)
+	}
+	defer rows.Close()
+
+	entities, err := pgx.CollectRows(rows, pgx.RowToStructByName[entity.User])
+	if err != nil {
+		return nil, fmt.Errorf("scan users: %w", err)
+	}
+
+	users := make([]model.User, 0, len(entities))
+	for _, user := range entities {
+		users = append(users, entity.ToUser(user))
+	}
+
+	return users, nil
+}

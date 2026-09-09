@@ -32,3 +32,4 @@ docker.env
 # .idea/
 # .vscode/
 .task
+data/

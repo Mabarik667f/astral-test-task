@@ -1,6 +1,10 @@
 package doccmd
 
-import "github.com/google/uuid"
+import (
+	"io"
+
+	"github.com/google/uuid"
+)
 
 type CreateDocumentCmd struct {
 	OwnerID  uuid.UUID
@@ -9,6 +13,6 @@ type CreateDocumentCmd struct {
 	IsPublic bool
 	MimeType string
 	Grant    []string
-	JSONData map[any]any
-	File     []byte
+	JSONData map[string]any
+	File     io.Reader
 }

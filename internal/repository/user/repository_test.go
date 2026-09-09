@@ -87,3 +87,59 @@ func TestRepository_GetByLoginWithPasswordHash(t *testing.T) {
 		require.ErrorIs(t, err, errs.ErrUserNotFound)
 	})
 }
+
+func TestRepository_GetUsersByLogins(t *testing.T) {
+	t.Run("success", func(t *testing.T) {
+		ctx := context.Background()
+		testDB := testhelpers.SetupTestPostgres(ctx, t)
+		testDB.Migrate(ctx, t, testhelpers.MigrationsPath())
+		defer testDB.Close(t)
+
+		user1, err := model.NewUser(model.PasswordHash("hash1"), "ValidLogin123")
+		require.NoError(t, err)
+
+		user2, err := model.NewUser(model.PasswordHash("hash2"), "ValidLogin456")
+		require.NoError(t, err)
+
+		repo := NewRepository(testDB.Pool)
+
+		_, err = repo.Create(ctx, *user1)
+		require.NoError(t, err)
+
+		_, err = repo.Create(ctx, *user2)
+		require.NoError(t, err)
+
+		res, err := repo.GetUsersByLogins(ctx, []string{
+			user1.Login,
+			user2.Login,
+		})
+
+		require.NoError(t, err)
+		require.Len(t, res, 2)
+
+		users := map[string]model.User{
+			res[0].Login: res[0],
+			res[1].Login: res[1],
+		}
+
+		assert.Equal(t, user1.ID, users[user1.Login].ID)
+		assert.Equal(t, user2.ID, users[user2.Login].ID)
+	})
+
+	t.Run("empty", func(t *testing.T) {
+		ctx := context.Background()
+		testDB := testhelpers.SetupTestPostgres(ctx, t)
+		testDB.Migrate(ctx, t, testhelpers.MigrationsPath())
+		defer testDB.Close(t)
+
+		repo := NewRepository(testDB.Pool)
+
+		res, err := repo.GetUsersByLogins(ctx, []string{
+			"someLogin",
+			"anotherLogin",
+		})
+
+		require.NoError(t, err)
+		assert.Empty(t, res)
+	})
+}

@@ -22,7 +22,11 @@ type DocHandler interface {
 	DeleteByID(w http.ResponseWriter, r *http.Request)
 }
 
-func API(sessionManager *scs.SessionManager, userHandler UserHandler) http.Handler {
+func API(
+	sessionManager *scs.SessionManager,
+	userHandler UserHandler,
+	docHandler DocHandler,
+) http.Handler {
 	r := chi.NewRouter()
 
 	r.Use(middleware.Recoverer)
@@ -40,6 +44,7 @@ func API(sessionManager *scs.SessionManager, userHandler UserHandler) http.Handl
 
 	r.Route("/api", func(r chi.Router) {
 		UserHandlerRegister(r, userHandler)
+		DocHandlerRegister(r, docHandler)
 	})
 
 	return r

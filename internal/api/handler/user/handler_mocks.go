@@ -150,17 +150,3 @@ func (mr *MockSessionManagerMockRecorder) Remove(ctx, key any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Remove", reflect.TypeOf((*MockSessionManager)(nil).Remove), ctx, key)
 }
-
-// Token mocks base method.
-func (m *MockSessionManager) Token(ctx context.Context) string {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Token", ctx)
-	ret0, _ := ret[0].(string)
-	return ret0
-}
-
-// Token indicates an expected call of Token.
-func (mr *MockSessionManagerMockRecorder) Token(ctx any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Token", reflect.TypeOf((*MockSessionManager)(nil).Token), ctx)
-}

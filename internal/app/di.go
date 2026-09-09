@@ -9,6 +9,8 @@ import (
 	"github.com/Mabarik667f/fsserver/internal/api/handler"
 	"github.com/Mabarik667f/fsserver/internal/infrastructure/db"
 	"github.com/Mabarik667f/fsserver/internal/infrastructure/security"
+	"github.com/Mabarik667f/fsserver/internal/integration"
+	"github.com/Mabarik667f/fsserver/internal/integration/filestorage"
 	"github.com/Mabarik667f/fsserver/internal/repository"
 	"github.com/Mabarik667f/fsserver/internal/service"
 	"github.com/Mabarik667f/fsserver/pkg/config"
@@ -23,14 +25,18 @@ type diContainer struct {
 	db             *pgxpool.Pool
 	hasher         *security.ArgonHasher
 	sessionManager *scs.SessionManager
+	storage        integration.FileStorage
 
 	validator *validator.Validate
 
 	userRepo repository.UserRepository
+	docRepo  repository.DocRepository
 
 	userService service.UserService
+	docService  service.DocService
 
 	userHandler handler.UserHandler
+	docHandler  handler.DocHandler
 }
 
 func newDiContainer() *diContainer {
@@ -49,6 +55,14 @@ func (d *diContainer) DB() *pgxpool.Pool {
 	}
 
 	return d.db
+}
+
+func (d *diContainer) Storage() integration.FileStorage {
+	if d.storage == nil {
+		d.storage = filestorage.NewStorage("./data")
+	}
+
+	return d.storage
 }
 
 func (d *diContainer) SessionManager() *scs.SessionManager {
@@ -90,6 +104,14 @@ func (d *diContainer) UserRepo() repository.UserRepository {
 	return d.userRepo
 }
 
+func (d *diContainer) DocRepo() repository.DocRepository {
+	if d.docRepo == nil {
+		d.docRepo = repository.NewDocRepo(d.DB())
+	}
+
+	return d.docRepo
+}
+
 func (d *diContainer) UserService() service.UserService {
 	if d.userService == nil {
 		d.userService = service.NewUserService(
@@ -102,6 +124,14 @@ func (d *diContainer) UserService() service.UserService {
 	return d.userService
 }
 
+func (d *diContainer) DocService() service.DocService {
+	if d.docService == nil {
+		d.docService = service.NewDocService(d.UserRepo(), d.DocRepo(), d.Storage())
+	}
+
+	return d.docService
+}
+
 func (d *diContainer) UserHandler() handler.UserHandler {
 	if d.userHandler == nil {
 		d.userHandler = handler.NewUserHandler(d.UserService(), d.SessionManager(), d.Validator())
@@ -109,11 +139,19 @@ func (d *diContainer) UserHandler() handler.UserHandler {
 	return d.userHandler
 }
 
+func (d *diContainer) DocHandler() handler.DocHandler {
+	if d.docHandler == nil {
+		d.docHandler = handler.NewDocHandler(d.DocService(), d.Validator())
+	}
+	return d.docHandler
+}
+
 func (d *diContainer) API() http.Handler {
 	if d.api == nil {
 		d.api = handler.API(
 			d.SessionManager(),
 			d.UserHandler(),
+			d.DocHandler(),
 		)
 	}
 

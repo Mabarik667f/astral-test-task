@@ -69,20 +69,17 @@ func (h *handler) Register(w http.ResponseWriter, r *http.Request) {
 
 	login, err := h.service.Register(cmd)
 	if err != nil {
-		if errors.Is(err, errs.ErrAdminToken) {
+		switch {
+		case errors.Is(err, errs.ErrAdminToken):
 			response.ErrResponse(w, http.StatusForbidden, err.Error())
-			return
-		}
-		if errors.Is(err, errs.ErrUserUnique) {
+		case errors.Is(err, errs.ErrUserUnique):
 			response.ErrResponse(w, http.StatusConflict, err.Error())
-			return
-		}
-		if errors.Is(err, errs.ErrLoginPatternMatch) ||
-			errors.Is(err, errs.ErrPasswordPatterMatch) {
+		case errors.Is(err, errs.ErrLoginPatternMatch) ||
+			errors.Is(err, errs.ErrPasswordPatterMatch):
 			response.ErrResponse(w, http.StatusBadRequest, err.Error())
-			return
+		default:
+			response.ErrResponse(w, http.StatusInternalServerError, errs.ErrInternalServer.Error())
 		}
-		response.ErrResponse(w, http.StatusInternalServerError, errs.ErrInternalServer.Error())
 		return
 	}
 
@@ -111,15 +108,16 @@ func (h *handler) Login(w http.ResponseWriter, r *http.Request) {
 
 	userID, err := h.service.Login(cmd)
 	if err != nil {
-		if errors.Is(err, errs.ErrUserNotFound) {
+		switch {
+		case errors.Is(err, errs.ErrUserNotFound):
 			response.ErrResponse(w, http.StatusNotFound, err.Error())
 			return
-		}
-		if errors.Is(err, errs.ErrPasswordsNotEqual) {
+		case errors.Is(err, errs.ErrPasswordsNotEqual):
 			response.ErrResponse(w, http.StatusUnauthorized, err.Error())
 			return
+		default:
+			response.ErrResponse(w, http.StatusInternalServerError, errs.ErrInternalServer.Error())
 		}
-		response.ErrResponse(w, http.StatusInternalServerError, errs.ErrInternalServer.Error())
 		return
 	}
 

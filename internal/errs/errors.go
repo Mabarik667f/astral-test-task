@@ -25,6 +25,12 @@ var (
 
 	ErrPasswordsNotEqual = errors.New("passwords not equal")
 
+	ErrDocNameEmpty     = errors.New("document name can not be empty")
+	ErrDocMimeTypeEmpty = errors.New("document mime type can not be empty")
+	ErrDocBusiness      = errors.New("document failed to create: business error")
+
+	ErrSaveFileToStorage = errors.New("error to save file in storage")
+
 	ErrUserUnique   = errors.New("user fields unique constraint")
 	ErrUserNotFound = errors.New("user not found")
 )
