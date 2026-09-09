@@ -25,9 +25,10 @@ type Service interface {
 
 type SessionManager interface {
 	Put(ctx context.Context, key string, value any)
-	Remove(ctx context.Context, key string)
 	Exists(ctx context.Context, key string) bool
+	Destroy(ctx context.Context) error
 	Commit(ctx context.Context) (string, time.Time, error)
+	RenewToken(ctx context.Context) error
 }
 
 type handler struct {
@@ -121,7 +122,18 @@ func (h *handler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.sessionManager.Put(r.Context(), "user_id", userID.String())
+	if err := h.sessionManager.RenewToken(r.Context()); err != nil {
+		response.ErrResponse(
+			w,
+			http.StatusInternalServerError,
+			errs.ErrInternalServer.Error(),
+		)
+		return
+	}
+
+	h.sessionManager.Put(r.Context(), "userID", userID.String())
+	h.sessionManager.Put(r.Context(), "userLogin", cmd.Login)
+
 	token, _, err := h.sessionManager.Commit(r.Context())
 	if err != nil {
 		response.ErrResponse(
@@ -150,7 +162,11 @@ func (h *handler) Logout(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.sessionManager.Remove(r.Context(), token)
+	if err := h.sessionManager.Destroy(r.Context()); err != nil {
+		response.ErrResponse(w, http.StatusInternalServerError, errs.ErrInternalServer.Error())
+		return
+	}
+
 	response.JSON(w, http.StatusOK, response.Resp{
 		Response: map[string]bool{
 			token: true,

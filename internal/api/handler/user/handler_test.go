@@ -141,9 +141,12 @@ func TestHandler_Login(t *testing.T) {
 
 		mockSessionManager.EXPECT().
 			Commit(gomock.Any()).Return(token, time.Time{}, nil)
-
 		mockSessionManager.EXPECT().
-			Put(gomock.Any(), "user_id", userID.String())
+			Put(gomock.Any(), "userID", userID.String())
+		mockSessionManager.EXPECT().
+			Put(gomock.Any(), "userLogin", data.Login)
+		mockSessionManager.EXPECT().
+			RenewToken(gomock.Any()).Return(nil)
 
 		handler := NewHandler(
 			mockSrv,
@@ -229,7 +232,7 @@ func TestHandler_Logout(t *testing.T) {
 		mockSessionManager.EXPECT().Exists(gomock.Any(), token).Return(true)
 
 		mockSessionManager.EXPECT().
-			Remove(gomock.Any(), token)
+			Destroy(gomock.Any()).Return(nil)
 
 		handler := NewHandler(
 			mockSrv,

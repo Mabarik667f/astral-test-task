@@ -113,6 +113,20 @@ func (mr *MockSessionManagerMockRecorder) Commit(ctx any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Commit", reflect.TypeOf((*MockSessionManager)(nil).Commit), ctx)
 }
 
+// Destroy mocks base method.
+func (m *MockSessionManager) Destroy(ctx context.Context) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Destroy", ctx)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Destroy indicates an expected call of Destroy.
+func (mr *MockSessionManagerMockRecorder) Destroy(ctx any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Destroy", reflect.TypeOf((*MockSessionManager)(nil).Destroy), ctx)
+}
+
 // Exists mocks base method.
 func (m *MockSessionManager) Exists(ctx context.Context, key string) bool {
 	m.ctrl.T.Helper()
@@ -139,14 +153,16 @@ func (mr *MockSessionManagerMockRecorder) Put(ctx, key, value any) *gomock.Call 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Put", reflect.TypeOf((*MockSessionManager)(nil).Put), ctx, key, value)
 }
 
-// Remove mocks base method.
-func (m *MockSessionManager) Remove(ctx context.Context, key string) {
+// RenewToken mocks base method.
+func (m *MockSessionManager) RenewToken(ctx context.Context) error {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "Remove", ctx, key)
+	ret := m.ctrl.Call(m, "RenewToken", ctx)
+	ret0, _ := ret[0].(error)
+	return ret0
 }
 
-// Remove indicates an expected call of Remove.
-func (mr *MockSessionManagerMockRecorder) Remove(ctx, key any) *gomock.Call {
+// RenewToken indicates an expected call of RenewToken.
+func (mr *MockSessionManagerMockRecorder) RenewToken(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Remove", reflect.TypeOf((*MockSessionManager)(nil).Remove), ctx, key)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RenewToken", reflect.TypeOf((*MockSessionManager)(nil).RenewToken), ctx)
 }

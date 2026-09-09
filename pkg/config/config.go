@@ -18,6 +18,7 @@ type Config struct {
 	Postgres    PostgresConfig
 	Service     ServiceConfig
 	ArgonParams ArgonParams
+	CacheParams CacheParams
 }
 
 type ArgonParams struct {
@@ -27,10 +28,15 @@ type ArgonParams struct {
 	KeyLength  uint32 `env:"KEY_LENGTH, default=32"`
 }
 
+type CacheParams struct {
+	CleanupDurationMinutes int64 `env:"CLEANUP_DURATION_MINUTES, default=5"`
+}
+
 type ServiceConfig struct {
-	AdminToken string `env:"ADMIN_TOKEN"`
-	HTTPHost   string `env:"SERVICE_HTTP_HOST, default=localhost"`
-	HTTPPort   string `env:"SERVICE_HTTP_PORT, default=8080"`
+	AdminToken string   `env:"ADMIN_TOKEN"`
+	HTTPHost   string   `env:"SERVICE_HTTP_HOST, default=localhost"`
+	HTTPPort   string   `env:"SERVICE_HTTP_PORT, default=8080"`
+	CORS       []string `env:"CORS"`
 }
 
 type PostgresConfig struct {

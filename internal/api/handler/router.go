@@ -3,6 +3,7 @@ package handler
 import (
 	"net/http"
 
+	"github.com/Mabarik667f/fsserver/pkg/config"
 	"github.com/alexedwards/scs/v2"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -31,7 +32,7 @@ func API(
 
 	r.Use(middleware.Recoverer)
 	r.Use(cors.Handler(cors.Options{
-		AllowedOrigins:   []string{"https://*", "http://*"}, // TODO: to config
+		AllowedOrigins:   config.AppConfig().Service.CORS,
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD"},
 		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
 		ExposedHeaders:   []string{"Link"},
@@ -59,6 +60,8 @@ func UserHandlerRegister(r chi.Router, h UserHandler) {
 func DocHandlerRegister(r chi.Router, h DocHandler) {
 	r.Post("/docs", h.Upload)
 	r.Get("/docs", h.Get)
+	r.Head("/docs", h.Get)
 	r.Get("/docs/{id}", h.GetByID)
+	r.Head("/docs/{id}", h.GetByID)
 	r.Delete("/docs/{id}", h.DeleteByID)
 }
