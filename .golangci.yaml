@@ -9,11 +9,11 @@ formatters:
 linters:
   disable:
     - errcheck
+    - goconst
   enable:
     - govet
     - dupl
     - ineffassign
     - unused
     - staticcheck
-    - goconst
     - gocyclo

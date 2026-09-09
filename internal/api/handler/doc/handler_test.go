@@ -156,6 +156,7 @@ func TestHandler_Get(t *testing.T) {
 		}
 
 		cmd := doccmd.GetDocumentsListCmd{
+			Login: new(""),
 			Key:   "mime",
 			Value: "image/jpeg",
 			Limit: 10,

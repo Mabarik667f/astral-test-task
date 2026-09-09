@@ -1,0 +1,269 @@
+{
+	"info": {
+		"_postman_id": "b677b9de-4d0d-4ea0-b4d8-2b38d662c823",
+		"name": "Astral",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "28558284"
+	},
+	"item": [
+		{
+			"name": "http://localhost:8080/api/register",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"admin_token\": \"1mnBLIm8e5aprvEARdo7FWL/3CT1eZrQja48Oh8dd1c4G9VbdflnXz7F3epqz6+Ic/BWiNZr1R5SwtNKWL0SzQ==\",\n    \"login\": \"ValidLogin1\",\n    \"pswd\": \"Password47+-\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/register",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"register"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "http://localhost:8080/api/auth",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"login\": \"ValidLogin1\",\n    \"pswd\": \"Password47+-\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/auth",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"auth"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "http://localhost:8080/api/auth/DYFIB-G6jaP5UrJ0vql9iv0UMx23KMrdjG99ugnKgf4",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/api/auth/DYFIB-G6jaP5UrJ0vql9iv0UMx23KMrdjG99ugnKgf4",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"auth",
+						"DYFIB-G6jaP5UrJ0vql9iv0UMx23KMrdjG99ugnKgf4"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "http://localhost:8080/api/docs",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "meta",
+							"value": "{\"name\": \"photo.jpg\", \"file\": false, \"public\": false, \"mime\": \"image/jpeg\", \"grant\": [\"ValidLogin2\"]}",
+							"type": "text"
+						},
+						{
+							"key": "json",
+							"value": "{\"description\": 123}",
+							"type": "text"
+						},
+						{
+							"key": "file",
+							"value": "",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/docs",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"docs"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "http://localhost:8080/api/docs",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/api/docs/2d500243-4546-47a1-9f86-c2800e0f647f",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"docs",
+						"2d500243-4546-47a1-9f86-c2800e0f647f"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "http://localhost:8080/api/docs/1703da22-ba87-484c-95dc-1b36b844947e",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/api/docs/1703da22-ba87-484c-95dc-1b36b844947e",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"docs",
+						"1703da22-ba87-484c-95dc-1b36b844947e"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "http://localhost:8080/api/docs?key=mime&value=image/jpeg&login=&limit=10",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/api/docs?key=mime&value=image/jpeg&login=&limit=10",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"docs"
+					],
+					"query": [
+						{
+							"key": "key",
+							"value": "mime",
+							"description": "\"owner_id\" \"name\" \"file\" \"public\" \"mime\" \"created\""
+						},
+						{
+							"key": "value",
+							"value": "image/jpeg"
+						},
+						{
+							"key": "login",
+							"value": ""
+						},
+						{
+							"key": "limit",
+							"value": "10"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "http://localhost:8080/api/docs?key=mime&value=image/jpeg&login=&limit=10",
+			"request": {
+				"method": "HEAD",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/api/docs?key=mime&value=image/jpeg&login=&limit=10",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"docs"
+					],
+					"query": [
+						{
+							"key": "key",
+							"value": "mime"
+						},
+						{
+							"key": "value",
+							"value": "image/jpeg"
+						},
+						{
+							"key": "login",
+							"value": ""
+						},
+						{
+							"key": "limit",
+							"value": "10"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "http://localhost:8080/api/docs/1703da22-ba87-484c-95dc-1b36b844947e",
+			"request": {
+				"method": "HEAD",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/api/docs/1703da22-ba87-484c-95dc-1b36b844947e",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"docs",
+						"1703da22-ba87-484c-95dc-1b36b844947e"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

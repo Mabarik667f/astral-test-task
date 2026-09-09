@@ -26,6 +26,7 @@ func TestRepository_Create(t *testing.T) {
 			model.PasswordHash("hash1"),
 			"ValidLogin123",
 		)
+		require.NoError(t, err)
 
 		query := `INSERT INTO users (id, login, password_hash) VALUES ($1, $2, $3)`
 		_, err = testDB.Pool.Exec(ctx, query, user.ID, user.Login, user.Password)
