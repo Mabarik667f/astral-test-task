@@ -1,6 +1,9 @@
 package entity
 
-import "github.com/Mabarik667f/fsserver/internal/model"
+import (
+	"github.com/Mabarik667f/fsserver/internal/model"
+	"github.com/Mabarik667f/fsserver/internal/model/query"
+)
 
 func ToDoc(doc Doc) model.Doc {
 	return model.Doc{
@@ -13,6 +16,21 @@ func ToDoc(doc Doc) model.Doc {
 		JSONData:  doc.JSON,
 		FilePath:  doc.FilePath,
 		CreatedAt: doc.Created,
+	}
+}
+
+func ToDocReadModel(doc DocRead) query.DocReadModel {
+	return query.DocReadModel{
+		ID:        doc.ID,
+		OwnerID:   doc.OwnerID,
+		Name:      doc.Name,
+		IsFile:    doc.IsFile,
+		IsPublic:  doc.IsPublic,
+		MimeType:  doc.MimeType,
+		JSONData:  doc.JSONData,
+		FilePath:  doc.FilePath,
+		CreatedAt: doc.CreatedAt,
+		Grants:    doc.Grants,
 	}
 }
 

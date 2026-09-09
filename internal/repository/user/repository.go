@@ -71,9 +71,9 @@ func (r *repository) GetUsersByLogins(ctx context.Context, logins []string) ([]m
 		return nil, fmt.Errorf("scan users: %w", err)
 	}
 
-	users := make([]model.User, 0, len(entities))
-	for _, user := range entities {
-		users = append(users, entity.ToUser(user))
+	users := make([]model.User, len(entities))
+	for i := range entities {
+		users[i] = entity.ToUser(entities[i])
 	}
 
 	return users, nil

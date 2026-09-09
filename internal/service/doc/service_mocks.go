@@ -14,7 +14,9 @@ import (
 	io "io"
 	reflect "reflect"
 
+	doccmd "github.com/Mabarik667f/fsserver/internal/command/doc"
 	model "github.com/Mabarik667f/fsserver/internal/model"
+	query "github.com/Mabarik667f/fsserver/internal/model/query"
 	uuid "github.com/google/uuid"
 	gomock "go.uber.org/mock/gomock"
 )
@@ -177,4 +179,48 @@ func (m *MockRepository) CreateGrants(ctx context.Context, docID uuid.UUID, user
 func (mr *MockRepositoryMockRecorder) CreateGrants(ctx, docID, userIDs any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateGrants", reflect.TypeOf((*MockRepository)(nil).CreateGrants), ctx, docID, userIDs)
+}
+
+// DeleteByID mocks base method.
+func (m *MockRepository) DeleteByID(ctx context.Context, docID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteByID", ctx, docID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteByID indicates an expected call of DeleteByID.
+func (mr *MockRepositoryMockRecorder) DeleteByID(ctx, docID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteByID", reflect.TypeOf((*MockRepository)(nil).DeleteByID), ctx, docID)
+}
+
+// Get mocks base method.
+func (m *MockRepository) Get(ctx context.Context, cmd doccmd.GetDocumentsListCmd, userID uuid.UUID) ([]query.DocReadModel, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Get", ctx, cmd, userID)
+	ret0, _ := ret[0].([]query.DocReadModel)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Get indicates an expected call of Get.
+func (mr *MockRepositoryMockRecorder) Get(ctx, cmd, userID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockRepository)(nil).Get), ctx, cmd, userID)
+}
+
+// GetByID mocks base method.
+func (m *MockRepository) GetByID(ctx context.Context, docID uuid.UUID) (query.DocReadModel, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetByID", ctx, docID)
+	ret0, _ := ret[0].(query.DocReadModel)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetByID indicates an expected call of GetByID.
+func (mr *MockRepositoryMockRecorder) GetByID(ctx, docID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByID", reflect.TypeOf((*MockRepository)(nil).GetByID), ctx, docID)
 }

@@ -33,4 +33,9 @@ var (
 
 	ErrUserUnique   = errors.New("user fields unique constraint")
 	ErrUserNotFound = errors.New("user not found")
+
+	ErrDocNotFound         = errors.New("document not found")
+	ErrDocPermissionDenied = errors.New("you don't have access to this document")
+
+	ErrInvalidFilter = errors.New("invalid documents filter")
 )
