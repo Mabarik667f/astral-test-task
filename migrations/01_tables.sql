@@ -34,6 +34,6 @@ CREATE TABLE IF NOT EXISTS doc_grants (
 -- +goose Down
 -- +goose StatementBegin 
 DROP TABLE IF EXISTS doc_grants;
-DROP TABLE IF EXISTS users;
 DROP TABLE IF EXISTS docs;
+DROP TABLE IF EXISTS users;
 -- +goose StatementEnd

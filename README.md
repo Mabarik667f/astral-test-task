@@ -31,9 +31,9 @@ task test
 
 Astral.postman_collection.json - Postman коллекция версии 2.1
 
-[task](https://github.com/go-task/task) - замена Make
-[mockgen](https://github.com/uber-go/mock) - для моков
-[goose](https://github.com/pressly/goose) - для миграций
+- [task](https://github.com/go-task/task) - замена Make
+- [mockgen](https://github.com/uber-go/mock) - для моков
+- [goose](https://github.com/pressly/goose) - для миграций
 
 Генерация админ-секрета
 ```sh

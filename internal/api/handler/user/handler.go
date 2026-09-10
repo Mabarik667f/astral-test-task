@@ -25,7 +25,6 @@ type Service interface {
 
 type SessionManager interface {
 	Put(ctx context.Context, key string, value any)
-	Exists(ctx context.Context, key string) bool
 	Destroy(ctx context.Context) error
 	Commit(ctx context.Context) (string, time.Time, error)
 	RenewToken(ctx context.Context) error
@@ -154,11 +153,6 @@ func (h *handler) Logout(w http.ResponseWriter, r *http.Request) {
 	token := chi.URLParam(r, "token")
 	if token == "" {
 		response.ErrResponse(w, http.StatusBadRequest, errs.ErrTokenNotProvided.Error())
-		return
-	}
-
-	if ok := h.sessionManager.Exists(r.Context(), token); !ok {
-		response.ErrResponse(w, http.StatusNotFound, errs.ErrSessionNoExists.Error())
 		return
 	}
 

@@ -229,8 +229,6 @@ func TestHandler_Logout(t *testing.T) {
 
 		token := "test-token"
 
-		mockSessionManager.EXPECT().Exists(gomock.Any(), token).Return(true)
-
 		mockSessionManager.EXPECT().
 			Destroy(gomock.Any()).Return(nil)
 
@@ -270,8 +268,6 @@ func TestHandler_Logout(t *testing.T) {
 		mockSessionManager := NewMockSessionManager(ctrl)
 
 		token := "invalid"
-
-		mockSessionManager.EXPECT().Exists(gomock.Any(), token).Return(false)
 
 		handler := NewHandler(
 			mockSrv,
